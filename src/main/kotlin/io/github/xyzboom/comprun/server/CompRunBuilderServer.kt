@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.*
 import com.google.gson.JsonObject
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.xyzboom.comprun.CompRunInitData
+import io.github.xyzboom.comprun.DefaultBuildTarget
 import io.github.xyzboom.comprun.gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,12 +12,13 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.future.asCompletableFuture
 import java.util.concurrent.CompletableFuture
 
-class CompRunBuilderServer: BuildServer {
+class CompRunBuilderServer : BuildServer {
     companion object {
         private val logger = KotlinLogging.logger {}
         const val SERVER_NAME = "CompilerRunnerServer"
         const val VERSION = "0.1.0-SNAPSHOT"
     }
+
     lateinit var client: BuildClient
     override fun buildInitialize(params: InitializeBuildParams): CompletableFuture<InitializeBuildResult> {
         // in CompilerRunner, the init data is used to download the compiler that runner needed.
@@ -30,7 +32,10 @@ class CompRunBuilderServer: BuildServer {
                 SERVER_NAME,
                 VERSION,
                 Bsp4j.PROTOCOL_VERSION,
-                BuildServerCapabilities()
+                BuildServerCapabilities().apply {
+                    // todo provide depends on what runner we have
+                    compileProvider = CompileProvider(listOf("kotlin"))
+                }
             )
         }.asCompletableFuture()
     }
@@ -40,67 +45,105 @@ class CompRunBuilderServer: BuildServer {
     }
 
     override fun buildShutdown(): CompletableFuture<in Any> {
-        TODO("Not yet implemented")
+        return CoroutineScope(Dispatchers.Default).async {}.asCompletableFuture()
     }
 
-    override fun onBuildExit() {
-        TODO("Not yet implemented")
+    override fun onBuildExit() {}
+
+    override fun workspaceBuildTargets(): CompletableFuture<WorkspaceBuildTargetsResult> {
+        return CoroutineScope(Dispatchers.Default).async {
+            WorkspaceBuildTargetsResult(
+                listOf(
+                    BuildTarget(
+                        BuildTargetIdentifier(DefaultBuildTarget.NAME),
+                        emptyList(),
+                        listOf("kotlin"),
+                        emptyList(),
+                        BuildTargetCapabilities().apply {
+                            canCompile = true
+                        }
+                    )
+                )
+            )
+        }.asCompletableFuture()
     }
 
-    override fun workspaceBuildTargets(): CompletableFuture<WorkspaceBuildTargetsResult?>? {
-        TODO("Not yet implemented")
+    override fun workspaceReload(): CompletableFuture<in Any> {
+        return CoroutineScope(Dispatchers.Default).async {}.asCompletableFuture()
     }
 
-    override fun workspaceReload(): CompletableFuture<in Any>? {
-        TODO("Not yet implemented")
+    override fun buildTargetSources(params: SourcesParams?): CompletableFuture<SourcesResult> {
+        return CoroutineScope(Dispatchers.Default).async {
+            SourcesResult(emptyList())
+        }.asCompletableFuture()
     }
 
-    override fun buildTargetSources(params: SourcesParams?): CompletableFuture<SourcesResult?>? {
-        TODO("Not yet implemented")
+    override fun buildTargetInverseSources(params: InverseSourcesParams?): CompletableFuture<InverseSourcesResult> {
+        return CoroutineScope(Dispatchers.Default).async {
+            InverseSourcesResult(emptyList())
+        }.asCompletableFuture()
     }
 
-    override fun buildTargetInverseSources(params: InverseSourcesParams?): CompletableFuture<InverseSourcesResult?>? {
-        TODO("Not yet implemented")
+    override fun buildTargetDependencySources(params: DependencySourcesParams?): CompletableFuture<DependencySourcesResult> {
+        return CoroutineScope(Dispatchers.Default).async {
+            DependencySourcesResult(emptyList())
+        }.asCompletableFuture()
     }
 
-    override fun buildTargetDependencySources(params: DependencySourcesParams?): CompletableFuture<DependencySourcesResult?>? {
-        TODO("Not yet implemented")
+    override fun buildTargetDependencyModules(params: DependencyModulesParams?): CompletableFuture<DependencyModulesResult> {
+        return CoroutineScope(Dispatchers.Default).async {
+            DependencyModulesResult(emptyList())
+        }.asCompletableFuture()
     }
 
-    override fun buildTargetDependencyModules(params: DependencyModulesParams?): CompletableFuture<DependencyModulesResult?>? {
-        TODO("Not yet implemented")
+    override fun buildTargetResources(params: ResourcesParams?): CompletableFuture<ResourcesResult> {
+        return CoroutineScope(Dispatchers.Default).async {
+            ResourcesResult(emptyList())
+        }.asCompletableFuture()
     }
 
-    override fun buildTargetResources(params: ResourcesParams?): CompletableFuture<ResourcesResult?>? {
-        TODO("Not yet implemented")
+    override fun buildTargetOutputPaths(params: OutputPathsParams?): CompletableFuture<OutputPathsResult> {
+        return CoroutineScope(Dispatchers.Default).async {
+            OutputPathsResult(emptyList())
+        }.asCompletableFuture()
     }
 
-    override fun buildTargetOutputPaths(params: OutputPathsParams?): CompletableFuture<OutputPathsResult?>? {
-        TODO("Not yet implemented")
+    override fun buildTargetCompile(params: CompileParams?): CompletableFuture<CompileResult> {
+        return CoroutineScope(Dispatchers.Default).async {
+            if (params == null) {
+                return@async CompileResult(StatusCode.ERROR)
+            }
+            // todo do compile here
+            return@async CompileResult(StatusCode.ERROR)
+        }.asCompletableFuture()
     }
 
-    override fun buildTargetCompile(params: CompileParams?): CompletableFuture<CompileResult?>? {
-        TODO("Not yet implemented")
+    override fun buildTargetRun(params: RunParams?): CompletableFuture<RunResult> {
+        return CoroutineScope(Dispatchers.Default).async {
+            RunResult(StatusCode.ERROR)
+        }.asCompletableFuture()
     }
 
-    override fun buildTargetRun(params: RunParams?): CompletableFuture<RunResult?>? {
-        TODO("Not yet implemented")
+    override fun buildTargetTest(params: TestParams?): CompletableFuture<TestResult> {
+        return CoroutineScope(Dispatchers.Default).async {
+            TestResult(StatusCode.ERROR).apply {
+                data = "Not supported"
+            }
+        }.asCompletableFuture()
     }
 
-    override fun buildTargetTest(params: TestParams?): CompletableFuture<TestResult?>? {
-        TODO("Not yet implemented")
+    override fun debugSessionStart(params: DebugSessionParams?): CompletableFuture<DebugSessionAddress?> {
+        return CoroutineScope(Dispatchers.Default).async { null }.asCompletableFuture()
     }
 
-    override fun debugSessionStart(params: DebugSessionParams?): CompletableFuture<DebugSessionAddress?>? {
-        TODO("Not yet implemented")
-    }
-
-    override fun buildTargetCleanCache(params: CleanCacheParams?): CompletableFuture<CleanCacheResult?>? {
-        TODO("Not yet implemented")
+    override fun buildTargetCleanCache(params: CleanCacheParams?): CompletableFuture<CleanCacheResult> {
+        return CoroutineScope(Dispatchers.Default).async {
+            // todo clean cache here
+            CleanCacheResult(true)
+        }.asCompletableFuture()
     }
 
     override fun onRunReadStdin(params: ReadParams?) {
-        TODO("Not yet implemented")
     }
 
 }

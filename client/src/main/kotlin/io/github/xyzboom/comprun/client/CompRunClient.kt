@@ -46,6 +46,5 @@ class CompRunClient : CliktCommand() {
             }
         ).get()
         server.onBuildInitialized()
-        future.get()
     }
 }
