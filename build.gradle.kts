@@ -10,11 +10,13 @@ repositories {
     mavenCentral()
 }
 
+val cliktVersion by properties
+
 dependencies {
     api(project(":api"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     implementation("ch.epfl.scala:bsp4j:2.2.0-M4.TEST")
-    implementation("com.github.ajalt.clikt:clikt:5.0.3")
+    implementation("com.github.ajalt.clikt:clikt:$cliktVersion")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.13")
     runtimeOnly("org.apache.logging.log4j:log4j-core:2.20.0")
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:2.20.0")

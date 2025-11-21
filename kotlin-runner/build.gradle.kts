@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    application
 }
 
 group = "io.github.xyzboom"
@@ -9,7 +10,14 @@ repositories {
     mavenCentral()
 }
 
+val cliktVersion: String by properties
+
 dependencies {
+    compileOnly(kotlin("compiler", "2.2.21"))
+    implementation("com.github.ajalt.clikt:clikt:${cliktVersion}")
+    implementation(project(":api"))
+    implementation(project(":common-utils"))
+    runtimeOnly(kotlin("reflect"))
     testImplementation(kotlin("test"))
 }
 
@@ -18,4 +26,8 @@ tasks.test {
 }
 kotlin {
     jvmToolchain(17)
+}
+
+application {
+    mainClass = "io.github.xyzboom.comprun.kotlin.KotlinCompilerProvider"
 }

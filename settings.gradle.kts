@@ -5,3 +5,4 @@ rootProject.name = "CompilerRunner"
 include("kotlin-runner")
 include("api")
 include("client")
+include("common-utils")

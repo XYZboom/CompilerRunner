@@ -4,7 +4,7 @@ import ch.epfl.scala.bsp4j.*
 import com.google.gson.JsonObject
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.xyzboom.comprun.CompRunInitData
-import io.github.xyzboom.comprun.DefaultBuildTarget
+import io.github.xyzboom.comprun.Constants
 import io.github.xyzboom.comprun.gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -55,7 +55,7 @@ class CompRunBuilderServer : BuildServer {
             WorkspaceBuildTargetsResult(
                 listOf(
                     BuildTarget(
-                        BuildTargetIdentifier(DefaultBuildTarget.NAME),
+                        BuildTargetIdentifier(Constants.BUILD_TARGET_NAME),
                         emptyList(),
                         listOf("kotlin"),
                         emptyList(),
