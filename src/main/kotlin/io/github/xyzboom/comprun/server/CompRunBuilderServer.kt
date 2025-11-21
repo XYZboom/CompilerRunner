@@ -5,11 +5,14 @@ import com.google.gson.JsonObject
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.xyzboom.comprun.CompRunInitData
 import io.github.xyzboom.comprun.Constants
+import io.github.xyzboom.comprun.ICompiler
+import io.github.xyzboom.comprun.ICompilerProvider
 import io.github.xyzboom.comprun.gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.future.asCompletableFuture
+import java.util.ServiceLoader
 import java.util.concurrent.CompletableFuture
 
 class CompRunBuilderServer : BuildServer {
@@ -20,12 +23,41 @@ class CompRunBuilderServer : BuildServer {
     }
 
     lateinit var client: BuildClient
+
+    // key1: languageId, key2: supplier
+    private val providerMap: Map<String, Map<String, ICompilerProvider>>
+
+    // key1: languageId, key2: supplier, key3: version
+    private val compilers: MutableMap<String, MutableMap<String, MutableMap<String, ICompiler>>> = mutableMapOf()
+
+    private fun getCompiler(languageId: String, supplier: String, version: String): ICompiler? {
+        return compilers[languageId]?.get(supplier)?.get(version)
+    }
+
+    init {
+        val providers: Iterable<ICompilerProvider> = ServiceLoader.load(ICompilerProvider::class.java)
+        providerMap = providers.groupBy { it.languageId }.mapValues { it.value.associateBy { it1 -> it1.supplier } }
+    }
+
     override fun buildInitialize(params: InitializeBuildParams): CompletableFuture<InitializeBuildResult> {
         // in CompilerRunner, the init data is used to download the compiler that runner needed.
         val initData = params.data as? JsonObject
         if (initData != null) {
             val initData = gson.fromJson(initData, CompRunInitData::class.java)
-            println(initData)
+            val versionMap = initData.versionMap
+            versionMap.forEach {
+                it.value.forEach inner@{ it1 ->
+                    val provider = providerMap[it.key]?.get(it1.key) ?: return@inner
+                    it1.value.forEach { version ->
+                        if (getCompiler(it.key, it1.key, version) != null) {
+                            return@inner
+                        }
+                        val compiler = provider.requestCompiler(version) ?: return@inner
+                        compilers.getOrPut(it.key) { mutableMapOf() }
+                            .getOrPut(it1.key) { mutableMapOf() }[version] = compiler
+                    }
+                }
+            }
         }
         return CoroutineScope(Dispatchers.Default).async {
             InitializeBuildResult(

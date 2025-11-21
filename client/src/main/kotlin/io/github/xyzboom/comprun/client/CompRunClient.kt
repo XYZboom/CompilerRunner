@@ -7,6 +7,7 @@ import ch.epfl.scala.bsp4j.InitializeBuildParams
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.main
 import io.github.xyzboom.comprun.CompRunInitData
+import io.github.xyzboom.comprun.Constants
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import java.net.Socket
 import java.util.concurrent.Executors
@@ -42,7 +43,11 @@ class CompRunClient : CliktCommand() {
                     listOf("kotlin")
                 )
             ).apply {
-                data = CompRunInitData(versionMap = mapOf("kotlin" to setOf("2.2.21")))
+                data = CompRunInitData(
+                    versionMap = mapOf(
+                        "kotlin" to mapOf(Constants.DEFAULT_SUPPLIER to setOf("2.2.21", "2.1.21", "2.0.21"))
+                    )
+                )
             }
         ).get()
         server.onBuildInitialized()

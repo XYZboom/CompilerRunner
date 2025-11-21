@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     kotlin("jvm") version "2.2.21"
     application
@@ -20,6 +22,8 @@ dependencies {
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.13")
     runtimeOnly("org.apache.logging.log4j:log4j-core:2.20.0")
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:2.20.0")
+    runtimeOnly(project(":kotlin-runner"))
+    runtimeOnly(project(":java-runner"))
 
     testImplementation(kotlin("test"))
 }
