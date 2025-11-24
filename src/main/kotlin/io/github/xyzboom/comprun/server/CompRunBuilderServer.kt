@@ -27,24 +27,23 @@ class CompRunBuilderServer : BuildServer {
         private val logger = KotlinLogging.logger {}
         const val SERVER_NAME = "CompilerRunnerServer"
         const val VERSION = "0.1.0-SNAPSHOT"
+        // key1: languageId, key2: supplier
+        private val providerMap: Map<String, Map<String, ICompilerProvider>>
+
+        // key1: languageId, key2: supplier, key3: version
+        private val compilers: MutableMap<String, MutableMap<String, MutableMap<String, ICompiler>>> = mutableMapOf()
+
+        private fun getCompiler(languageId: String, supplier: String, version: String): ICompiler? {
+            return compilers[languageId]?.get(supplier)?.get(version)
+        }
+
+        init {
+            val providers: Iterable<ICompilerProvider> = ServiceLoader.load(ICompilerProvider::class.java)
+            providerMap = providers.groupBy { it.languageId }.mapValues { it.value.associateBy { it1 -> it1.supplier } }
+        }
     }
 
     lateinit var client: BuildClient
-
-    // key1: languageId, key2: supplier
-    private val providerMap: Map<String, Map<String, ICompilerProvider>>
-
-    // key1: languageId, key2: supplier, key3: version
-    private val compilers: MutableMap<String, MutableMap<String, MutableMap<String, ICompiler>>> = mutableMapOf()
-
-    private fun getCompiler(languageId: String, supplier: String, version: String): ICompiler? {
-        return compilers[languageId]?.get(supplier)?.get(version)
-    }
-
-    init {
-        val providers: Iterable<ICompilerProvider> = ServiceLoader.load(ICompilerProvider::class.java)
-        providerMap = providers.groupBy { it.languageId }.mapValues { it.value.associateBy { it1 -> it1.supplier } }
-    }
 
     override fun buildInitialize(params: InitializeBuildParams): CompletableFuture<InitializeBuildResult> {
         // in CompilerRunner, the init data is used to download the compiler that runner needed.
@@ -89,13 +88,10 @@ class CompRunBuilderServer : BuildServer {
                 return@async CompileResult(StatusCode.ERROR)
             }
             class Cli: CliCompiler() {
-                val language by option("--language", "-l", help = "The language of the compiler.").required()
-                val supplier by option("--supplier", "-s", help = "The supplier of the compiler.").required()
-                val version by option("--version", "-v", help = "The version of the compiler.").required()
                 val args by argument().multiple()
                 override fun run(): ICompilerResult {
                     val compiler = compilers[language]?.get(supplier)?.get(version)
-                        ?: return ICompilerResult.Companion.NoSuchCompiler(language, supplier, version)
+                        ?: return ICompilerResult.NoSuchCompiler(language, supplier, version)
                     return compiler.compile(args.toTypedArray())
                 }
             }
@@ -107,11 +103,11 @@ class CompRunBuilderServer : BuildServer {
                     StatusCode.ERROR
                 }
                 CompileResult(statusCode).apply {
-                    data = result.message
+                    data = result.toData()
                 }
             } catch (e: Exception) {
                 CompileResult(StatusCode.ERROR).apply {
-                    data = e.stackTraceToString()
+                    data = ICompilerResult.CommonFailure(e).toData()
                 }
             }
         }.asCompletableFuture()

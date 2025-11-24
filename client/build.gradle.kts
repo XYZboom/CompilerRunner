@@ -12,6 +12,7 @@ repositories {
 
 dependencies {
     implementation(project(":api"))
+    implementation(project(":common-utils"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     implementation("ch.epfl.scala:bsp4j:2.2.0-M4.TEST")
     implementation("com.github.ajalt.clikt:clikt:5.0.3")
