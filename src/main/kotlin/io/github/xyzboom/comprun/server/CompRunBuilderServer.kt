@@ -1,12 +1,19 @@
 package io.github.xyzboom.comprun.server
 
 import ch.epfl.scala.bsp4j.*
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.multiple
+import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
 import com.google.gson.JsonObject
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.xyzboom.comprun.CompRunInitData
 import io.github.xyzboom.comprun.Constants
 import io.github.xyzboom.comprun.ICompiler
 import io.github.xyzboom.comprun.ICompilerProvider
+import io.github.xyzboom.comprun.ICompilerResult
+import io.github.xyzboom.comprun.cli.CliCompiler
+import io.github.xyzboom.comprun.cli.main
 import io.github.xyzboom.comprun.gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -76,6 +83,40 @@ class CompRunBuilderServer : BuildServer {
         logger.info { "Build initialized" }
     }
 
+    override fun buildTargetCompile(params: CompileParams?): CompletableFuture<CompileResult> {
+        return CoroutineScope(Dispatchers.Default).async {
+            if (params == null) {
+                return@async CompileResult(StatusCode.ERROR)
+            }
+            class Cli: CliCompiler() {
+                val language by option("--language", "-l", help = "The language of the compiler.").required()
+                val supplier by option("--supplier", "-s", help = "The supplier of the compiler.").required()
+                val version by option("--version", "-v", help = "The version of the compiler.").required()
+                val args by argument().multiple()
+                override fun run(): ICompilerResult {
+                    val compiler = compilers[language]?.get(supplier)?.get(version)
+                        ?: return ICompilerResult.Companion.NoSuchCompiler(language, supplier, version)
+                    return compiler.compile(args.toTypedArray())
+                }
+            }
+            return@async try {
+                val result = Cli().main(params.arguments.toTypedArray())
+                val statusCode = if (result.success) {
+                    StatusCode.OK
+                } else {
+                    StatusCode.ERROR
+                }
+                CompileResult(statusCode).apply {
+                    data = result.message
+                }
+            } catch (e: Exception) {
+                CompileResult(StatusCode.ERROR).apply {
+                    data = e.stackTraceToString()
+                }
+            }
+        }.asCompletableFuture()
+    }
+
     override fun buildShutdown(): CompletableFuture<in Any> {
         return CoroutineScope(Dispatchers.Default).async {}.asCompletableFuture()
     }
@@ -137,16 +178,6 @@ class CompRunBuilderServer : BuildServer {
     override fun buildTargetOutputPaths(params: OutputPathsParams?): CompletableFuture<OutputPathsResult> {
         return CoroutineScope(Dispatchers.Default).async {
             OutputPathsResult(emptyList())
-        }.asCompletableFuture()
-    }
-
-    override fun buildTargetCompile(params: CompileParams?): CompletableFuture<CompileResult> {
-        return CoroutineScope(Dispatchers.Default).async {
-            if (params == null) {
-                return@async CompileResult(StatusCode.ERROR)
-            }
-            // todo do compile here
-            return@async CompileResult(StatusCode.ERROR)
         }.asCompletableFuture()
     }
 

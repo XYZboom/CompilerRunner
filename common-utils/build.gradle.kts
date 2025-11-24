@@ -9,10 +9,13 @@ repositories {
     mavenCentral()
 }
 
+val cliktVersion: String by properties
 val mavenResolverVersion: String by properties
 val ktorVersion: String by properties
 
 dependencies {
+    implementation(project(":api"))
+    implementation("com.github.ajalt.clikt:clikt:${cliktVersion}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     implementation("org.apache.maven.resolver:maven-resolver-transport-http:1.9.24")
     implementation("io.ktor:ktor-client-core:${ktorVersion}")

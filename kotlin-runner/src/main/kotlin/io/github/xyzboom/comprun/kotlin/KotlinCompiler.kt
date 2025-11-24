@@ -7,21 +7,12 @@ import org.jetbrains.kotlin.cli.common.CompilerSystemProperties
 import org.jetbrains.kotlin.cli.common.ExitCode
 import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
 import org.jetbrains.kotlin.cli.jvm.compiler.setupIdeaStandaloneExecution
-import java.io.File
 
 class KotlinCompiler(
     override val version: String
 ) : ICompiler {
     override val languageId: String
         get() = "kotlin"
-
-    override fun compile(files: List<File>): ICompilerResult {
-        TODO("Not yet implemented")
-    }
-
-    override fun compile(files: Map<String, String>): ICompilerResult {
-        TODO("Not yet implemented")
-    }
 
     override fun compile(args: Array<String>): ICompilerResult {
         // We depend on swing (indirectly through PSI or something), so we want to declare headless mode,

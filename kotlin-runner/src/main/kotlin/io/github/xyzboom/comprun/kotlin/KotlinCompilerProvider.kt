@@ -9,6 +9,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import io.github.xyzboom.comprun.Constants
 import io.github.xyzboom.comprun.ICompiler
 import io.github.xyzboom.comprun.ICompilerProvider
+import io.github.xyzboom.comprun.utils.InternalFindFirstClassLoader
 import io.github.xyzboom.comprun.utils.downloadAndUnzip
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -58,18 +59,8 @@ class KotlinCompilerProvider : ICompilerProvider {
         val files: Array<File> = File(targetDir, "kotlinc/lib").listFiles()
         val classLocation = KotlinCompiler::class.java.protectionDomain.codeSource.location
 
-        val loader = object : URLClassLoader((files.map { it.toURI().toURL() } + classLocation).toTypedArray(),
-            this::class.java.classLoader) {
-            override fun loadClass(name: String, resolve: Boolean): Class<*>? {
-                if (name.startsWith(this::class.java.`package`.name)) {
-                    val tryFind = findClass(name)
-                    if (tryFind != null) {
-                        return tryFind
-                    }
-                }
-                return super.loadClass(name, resolve)
-            }
-        }
+        val loader = InternalFindFirstClassLoader((files.map { it.toURI().toURL() } + classLocation).toTypedArray(),
+            this::class.java.classLoader, listOf(this::class.java.`package`.name))
 
         @Suppress("UNCHECKED_CAST")
         val compilerClass = loader.loadClass("io.github.xyzboom.comprun.kotlin.KotlinCompiler") as Class<ICompiler>

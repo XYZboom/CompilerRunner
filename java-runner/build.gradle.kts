@@ -9,7 +9,13 @@ repositories {
     mavenCentral()
 }
 
+val cliktVersion: String by properties
+
 dependencies {
+    compileOnly("org.eclipse.jdt.core.compiler:ecj:3.7")
+    implementation("com.github.ajalt.clikt:clikt:${cliktVersion}")
+    implementation(project(":api"))
+    implementation(project(":common-utils"))
     testImplementation(kotlin("test"))
 }
 
