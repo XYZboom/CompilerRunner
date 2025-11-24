@@ -43,15 +43,16 @@ class EclipseCompilerForJava(
             null,
             null,
         )
-        compileMethod.invoke(main, args)
+        val compileResult = compileMethod.invoke(main, args) as? Boolean
+        val outString = out.toString()
         val errorString = err.toString()
-        println(out.toString())
+        println(outString)
         System.err.println(errorString)
         val hasError = errorString.isNotEmpty()
         err.buffer.setLength(0)
         out.buffer.setLength(0)
-        return if (hasError) {
-            ICompilerResult.CommonFailure(-1, errorString)
+        return if (hasError || compileResult == false) {
+            ICompilerResult.CommonFailure(-1, outString + errorString)
         } else ICompilerResult.CommonSuccess
     }
 }

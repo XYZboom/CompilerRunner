@@ -59,7 +59,6 @@ class CompRunClient : CliCompiler() {
         val compileResult = server.buildTargetCompile(CompileParams(emptyList()).apply {
             arguments = listOf("-l", language, "-s", supplier, "-v", version, "--") + args.toList()
         }).get()
-        println(compileResult)
         val data = compileResult.data
         if (data is JsonElement) {
             val compilerResult = gson.fromJson(data, ICompilerResult.DataCompilerResult::class.java)
