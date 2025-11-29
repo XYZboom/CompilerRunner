@@ -52,22 +52,7 @@ class EclipseCompilerForJavaProvider : ICompilerProvider {
         } catch (_: DependencyResolutionException) {
             return null
         }
-        val compilerClasses = listOf(EclipseCompilerForJava::class, ICompiler::class)
-        val classLocations = compilerClasses.map { it.java.protectionDomain.codeSource.location }
-        val classpath = files.map { it.toURI().toURL() } /*+ classLocations*/
-        /*
-        val loader = InternalFindFirstClassLoader((files.map { it.toURI().toURL() } + classLocations).toTypedArray(),
-            null,
-            listOf(ICompiler::class.java.`package`.name, ""))
-
-        @Suppress("UNCHECKED_CAST")
-        val compilerClass = loader.loadClass(EclipseCompilerForJava::class.qualifiedName) as Class<ICompiler>
-        val constructor = compilerClass.getConstructor(String::class.java)
-        cache[version] = Triple(loader, compilerClass, constructor)*/
-//        val compiler = LoopedJvmProcessCompiler(
-//            classpath, EclipseCompilerForJava::class.qualifiedName,
-//        )
-
+        val classpath = files.map { it.toURI().toURL() }
         return EclipseCompilerForJava(classpath, version)
     }
 
