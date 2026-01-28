@@ -14,7 +14,7 @@ class KotlinCompiler(
     override val languageId: String
         get() = "kotlin"
 
-    override fun compile(args: Array<String>): ICompilerResult {
+    override fun compile(args: Array<String>, env: Map<String, String>): ICompilerResult {
         // We depend on swing (indirectly through PSI or something), so we want to declare headless mode,
         // to avoid accidentally starting the UI thread
         if (System.getProperty("java.awt.headless") == null) {

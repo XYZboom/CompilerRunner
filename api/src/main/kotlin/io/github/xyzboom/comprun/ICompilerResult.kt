@@ -30,6 +30,7 @@ interface ICompilerResult {
         override val message: String? = null
     ) : ICompilerResult {
         constructor(exception: Throwable) : this(-1, exception.stackTraceToString())
+
         override val success: Boolean = false
     }
 
@@ -37,5 +38,13 @@ interface ICompilerResult {
         override val success: Boolean = true
         override val exitCode: Int
             get() = 0
+    }
+
+    class SuccessWithMessage(
+        override val message: String,
+    ) : ICompilerResult {
+        override val exitCode: Int
+            get() = 0
+        override val success: Boolean = true
     }
 }

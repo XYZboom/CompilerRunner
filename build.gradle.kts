@@ -19,8 +19,8 @@ dependencies {
     implementation("ch.epfl.scala:bsp4j:2.2.0-M4.TEST")
     implementation("com.github.ajalt.clikt:clikt:$cliktVersion")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.13")
-    runtimeOnly("org.apache.logging.log4j:log4j-core:2.20.0")
-    runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:2.20.0")
+    runtimeOnly("org.apache.logging.log4j:log4j-core:2.25.3")
+    runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:2.25.3")
     runtimeOnly(project(":kotlin-runner"))
     runtimeOnly(project(":java-runner"))
 

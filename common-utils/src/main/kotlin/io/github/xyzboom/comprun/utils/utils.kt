@@ -1,5 +1,6 @@
 package io.github.xyzboom.comprun.utils
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
@@ -14,6 +15,8 @@ import java.io.FileOutputStream
 import java.util.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
+
+private val logger = KotlinLogging.logger {}
 
 suspend fun downloadAndUnzip(
     url: String, targetDir: String
@@ -47,7 +50,9 @@ suspend fun downloadAndUnzip(
                             // 显示进度
                             if (contentLength > 0) {
                                 val progress = (totalBytesRead * 100 / contentLength).toInt()
-                                print("\rDownloading ${url.split("/").last()}: $progress% ($totalBytesRead/$contentLength bytes)")
+                                logger.info {
+                                    "\rDownloading ${url.split("/").last()}: $progress% ($totalBytesRead/$contentLength bytes)"
+                                }
                             }
                         }
                     } while (bytesRead > 0)

@@ -12,5 +12,5 @@ interface ICompiler {
     /**
      * Compile using specific command line args
      */
-    fun compile(args: Array<String>): ICompilerResult
+    fun compile(args: Array<String>, env: Map<String, String> = emptyMap()): ICompilerResult
 }

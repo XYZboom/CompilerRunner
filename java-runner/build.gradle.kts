@@ -12,6 +12,7 @@ repositories {
 val cliktVersion: String by properties
 
 dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     compileOnly("org.eclipse.jdt.core.compiler:ecj:3.7")
     implementation("com.github.ajalt.clikt:clikt:${cliktVersion}")
     implementation(project(":api"))

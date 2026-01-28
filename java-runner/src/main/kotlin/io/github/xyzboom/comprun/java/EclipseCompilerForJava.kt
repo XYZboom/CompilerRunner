@@ -35,7 +35,7 @@ class EclipseCompilerForJava(
     override val languageId: String
         get() = "java"
 
-    override fun compile(args: Array<String>): ICompilerResult {
+    override fun compile(args: Array<String>, env: Map<String, String>): ICompilerResult {
         val main = mainConstructor.newInstance(
             PrintWriter(out),
             PrintWriter(err),

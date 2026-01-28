@@ -3,8 +3,6 @@ package io.github.xyzboom.comprun.server
 import ch.epfl.scala.bsp4j.*
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
 import com.google.gson.JsonObject
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.xyzboom.comprun.CompRunInitData
@@ -21,12 +19,14 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.future.asCompletableFuture
 import java.util.ServiceLoader
 import java.util.concurrent.CompletableFuture
+import kotlin.collections.groupBy
 
 class CompRunBuilderServer : BuildServer {
     companion object {
         private val logger = KotlinLogging.logger {}
         const val SERVER_NAME = "CompilerRunnerServer"
         const val VERSION = "0.1.0-SNAPSHOT"
+
         // key1: languageId, key2: supplier
         private val providerMap: Map<String, Map<String, ICompilerProvider>>
 
@@ -40,6 +40,15 @@ class CompRunBuilderServer : BuildServer {
         init {
             val providers: Iterable<ICompilerProvider> = ServiceLoader.load(ICompilerProvider::class.java)
             providerMap = providers.groupBy { it.languageId }.mapValues { it.value.associateBy { it1 -> it1.supplier } }
+        }
+
+        fun logProviders() {
+            logger.info { "Available compiler providers:" }
+            providerMap.forEach { (languageId, supplierMap) ->
+                supplierMap.forEach { (supplier, _) ->
+                    logger.info { "- Language: $languageId, Supplier: $supplier" }
+                }
+            }
         }
     }
 
@@ -87,12 +96,15 @@ class CompRunBuilderServer : BuildServer {
             if (params == null) {
                 return@async CompileResult(StatusCode.ERROR)
             }
-            class Cli: CliCompiler() {
+            class Cli : CliCompiler() {
                 val args by argument().multiple()
                 override fun run(): ICompilerResult {
                     val compiler = compilers[language]?.get(supplier)?.get(version)
                         ?: return ICompilerResult.NoSuchCompiler(language, supplier, version)
-                    return compiler.compile(args.toTypedArray())
+                    return compiler.compile(args.toTypedArray(), env.associateBy(
+                        keySelector = { it.substringBefore("=") },
+                        valueTransform = { it.substringAfter("=") }
+                    ))
                 }
             }
             return@async try {

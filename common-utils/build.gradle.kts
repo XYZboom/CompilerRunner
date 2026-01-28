@@ -22,6 +22,7 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:${ktorVersion}")
     api("org.apache.maven.resolver:maven-resolver-supplier:1.9.24")
     api("org.apache.maven:maven-resolver-provider:3.9.11")
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.13")
     testImplementation(kotlin("test"))
 }
 

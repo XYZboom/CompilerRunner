@@ -1,6 +1,7 @@
 package io.github.xyzboom.comprun.cli
 
 import com.github.ajalt.clikt.core.BaseCliktCommand
+import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parsers.CommandLineParser
@@ -11,6 +12,8 @@ abstract class CliCompiler : BaseCliktCommand<CliCompiler>() {
     val language by option("--language", "-l", help = "The language of the compiler.").required()
     val supplier by option("--supplier", "-s", help = "The supplier of the compiler.").required()
     val version by option("--version", "-v", help = "The version of the compiler.").required()
+    val env by option("--env", "-e", help = "Environment variables for the compiler in KEY=VALUE format.")
+        .multiple()
 
     abstract fun run(): ICompilerResult
 }

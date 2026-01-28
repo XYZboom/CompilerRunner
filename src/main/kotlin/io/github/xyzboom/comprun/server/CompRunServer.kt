@@ -8,11 +8,15 @@ import java.net.InetSocketAddress
 import java.nio.channels.ServerSocketChannel
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.xyzboom.comprun.server.CompRunBuilderServer.Companion.logProviders
 import java.nio.channels.SocketChannel
 import java.util.concurrent.Executors
 
 class CompRunServer : CliktCommand() {
     companion object {
+        private val logger = KotlinLogging.logger {}
+
         @JvmStatic
         fun main(args: Array<String>) {
             CompRunServer().main(args)
@@ -22,7 +26,8 @@ class CompRunServer : CliktCommand() {
     private val port by option("-p", "--port").default("8123")
 
     override fun run() {
-        println("Starting Compiler Runner BSP server on port $port...")
+        logger.info { "Starting Compiler Runner BSP server on port $port..." }
+        logProviders()
         val serverChannel = ServerSocketChannel.open()
         serverChannel.bind(InetSocketAddress(port.toInt()))
         val es = Executors.newCachedThreadPool()
@@ -42,7 +47,7 @@ class CompRunServer : CliktCommand() {
         } finally {
             serverChannel.close()
             es.shutdown()
-            println("Server shutdown complete")
+            logger.info { "Server shutdown complete" }
         }
     }
 
@@ -63,14 +68,13 @@ class CompRunServer : CliktCommand() {
 
             localServer.client = launcher.remoteProxy
 
-            println("Starting BSP communication with client ${socket.inetAddress.hostAddress}")
+            logger.info { "Starting BSP communication with client ${socket.inetAddress.hostAddress}" }
             val future = launcher.startListening()
             future.get()
-            println("Client ${socket.inetAddress.hostAddress} disconnected")
+            logger.info { "Client ${socket.inetAddress.hostAddress} disconnected" }
         } catch (e: Exception) {
             if (!Thread.currentThread().isInterrupted) {
-                System.err.println("Error handling client connection: ${e.message}")
-                e.printStackTrace()
+                logger.error(e) { "Error handling client connection: ${e.message}" }
             }
         } finally {
             clientChannel.close()
