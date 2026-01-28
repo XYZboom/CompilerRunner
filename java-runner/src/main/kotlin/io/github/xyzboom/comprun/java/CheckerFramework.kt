@@ -1,5 +1,6 @@
 package io.github.xyzboom.comprun.java
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.xyzboom.comprun.ICompiler
 import io.github.xyzboom.comprun.ICompilerResult
 
@@ -7,6 +8,9 @@ class CheckerFramework(
     val mainScript: String,
     override val version: String
 ) : ICompiler {
+    companion object {
+        private val logger = KotlinLogging.logger {}
+    }
     override val languageId: String
         get() = "java"
 
@@ -19,6 +23,7 @@ class CheckerFramework(
         val output = process.inputStream.bufferedReader().readText()
         val error = process.errorStream.bufferedReader().readText()
         val combinedOutput = output + error
+        logger.info { combinedOutput }
         return if (exitCode != 0) {
             ICompilerResult.CommonFailure(exitCode, combinedOutput)
         } else {

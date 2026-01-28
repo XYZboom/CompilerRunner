@@ -48,11 +48,10 @@ class EclipseCompilerForJava(
         val errorString = err.toString()
         println(outString)
         System.err.println(errorString)
-        val hasError = errorString.isNotEmpty()
         err.buffer.setLength(0)
         out.buffer.setLength(0)
-        return if (hasError || compileResult == false) {
+        return if (compileResult == false) {
             ICompilerResult.CommonFailure(-1, outString + errorString)
-        } else ICompilerResult.CommonSuccess
+        } else ICompilerResult.SuccessWithMessage(outString + errorString)
     }
 }
