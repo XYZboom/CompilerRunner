@@ -7,6 +7,8 @@ import org.jetbrains.kotlin.cli.common.CompilerSystemProperties
 import org.jetbrains.kotlin.cli.common.ExitCode
 import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
 import org.jetbrains.kotlin.cli.jvm.compiler.setupIdeaStandaloneExecution
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
 
 class KotlinCompiler(
     override val version: String
@@ -25,9 +27,18 @@ class KotlinCompiler(
         }
 
         setupIdeaStandaloneExecution()
-        return when (val exitCode = CLICompiler.doMainNoExit(K2JVMCompiler(), args)) {
-            ExitCode.OK -> ICompilerResult.CommonSuccess
-            else -> ICompilerResult.CommonFailure(exitCode.code)
+        val output = ByteArrayOutputStream()
+        val exitCode = PrintStream(output, true, Charsets.UTF_8).use { stream ->
+            K2JVMCompiler().exec(stream, *args)
+        }
+        val message = output.toString(Charsets.UTF_8)
+        return when (exitCode) {
+            ExitCode.OK -> if (message.isEmpty()) {
+                ICompilerResult.CommonSuccess
+            } else {
+                ICompilerResult.SuccessWithMessage(message)
+            }
+            else -> ICompilerResult.CommonFailure(exitCode.code, message)
         }
     }
 }
