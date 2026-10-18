@@ -1,10 +1,27 @@
 plugins {
     kotlin("jvm") version "2.2.21"
     application
+    `maven-publish`
 }
 
 group = "io.github.xyzboom"
 version = "1.0-SNAPSHOT"
+
+allprojects {
+    apply(plugin = "maven-publish")
+
+    afterEvaluate {
+        if (components.findByName("java") != null) {
+            publishing {
+                publications {
+                    register<MavenPublication>("mavenJava") {
+                        from(components["java"])
+                    }
+                }
+            }
+        }
+    }
+}
 
 repositories {
     mavenCentral()
