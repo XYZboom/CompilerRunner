@@ -7,6 +7,13 @@ plugins {
 group = "io.github.xyzboom"
 version = "1.0-SNAPSHOT"
 
+val remoteRepositoryUrl = providers.gradleProperty("mavenRepositoryUrl")
+    .orElse(providers.environmentVariable("MAVEN_REPOSITORY_URL"))
+val remoteRepositoryUsername = providers.gradleProperty("mavenRepositoryUsername")
+    .orElse(providers.environmentVariable("MAVEN_REPOSITORY_USERNAME"))
+val remoteRepositoryPassword = providers.gradleProperty("mavenRepositoryPassword")
+    .orElse(providers.environmentVariable("MAVEN_REPOSITORY_PASSWORD"))
+
 allprojects {
     apply(plugin = "maven-publish")
 
@@ -16,6 +23,22 @@ allprojects {
                 publications {
                     register<MavenPublication>("mavenJava") {
                         from(components["java"])
+                    }
+                }
+                remoteRepositoryUrl.orNull?.let { repositoryUrl ->
+                    repositories {
+                        maven {
+                            name = "remote"
+                            url = uri(repositoryUrl)
+                            val username = remoteRepositoryUsername.orNull
+                            val password = remoteRepositoryPassword.orNull
+                            if (username != null && password != null) {
+                                credentials {
+                                    this.username = username
+                                    this.password = password
+                                }
+                            }
+                        }
                     }
                 }
             }
